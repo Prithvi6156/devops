@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Catch the Falling Object</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f0f0;
+      font-family: Arial, sans-serif;
+    }
+
+    .game-container {
+      position: relative;
+      width: 400px;
+      height: 600px;
+      border: 2px solid #333;
+      background-color: #fff;
+      overflow: hidden;
+    }
+
+    .falling-object {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 30px;
+      height: 30px;
+      background-color: red;
+      border-radius: 50%;
+    }
+
+    .basket {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      width: 60px;
+      height: 20px;
+      background-color: blue;
+      transform: translateX(-50%);
+    }
+
+    .score {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      font-size: 18px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="game-container">
+    <div class="score">Score: 0</div>
+    <div class="falling-object"></div>
+    <div class="basket"></div>
+  </div>
+
+  <script>
+    const gameContainer = document.querySelector('.game-container');
+    const fallingObject = document.querySelector('.falling-object');
+    const basket = document.querySelector('.basket');
+    const scoreDisplay = document.querySelector('.score');
+
+    let score = 0;
+    let basketPosition = 170; 
+
+    // Function to move the falling object
+    function resetFallingObject() {
+      fallingObject.style.top = '0px';
+      fallingObject.style.left = Math.random() * 370 + 'px'; // Random position within container width
+    }
+
+    function gameLoop() {
+      // Move the falling object down
+      let objectTop = parseInt(fallingObject.style.top || 0);
+      fallingObject.style.top = objectTop + 5 + 'px';
+
+      // Check if the object reaches the bottom
+      if (objectTop > 570) {
+        // Check if it lands in the basket
+        const objectLeft = parseInt(fallingObject.style.left);
+        const basketLeft = parseInt(basket.style.left);
+
+        if (objectLeft >= basketLeft - 30 && objectLeft <= basketLeft + 60) {
+          // Caught by the basket
+          score++;
+          scoreDisplay.textContent = `Score: ${score}`;
+        } else {
+          // Missed the object
+          alert('Game Over! Final Score: ' + score);
+          score = 0;
+          scoreDisplay.textContent = `Score: ${score}`;
+        }
+        resetFallingObject();
+      }
+
+      requestAnimationFrame(gameLoop);
+    }
+
+    // Event listener for basket movement
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft' && basketPosition > 0) {
+        basketPosition -= 20;
+      } else if (e.key === 'ArrowRight' && basketPosition < 340) {
+        basketPosition += 20;
+      }
+      basket.style.left = basketPosition + 'px';
+    });
+
+    // Initialize game
+    resetFallingObject();
+    gameLoop();
+  </script>
+</body>
+</html>
