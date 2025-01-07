@@ -1,121 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Catch the Falling Object</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      background-color: #f0f0f0;
-      font-family: Arial, sans-serif;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tile Slider Puzzle</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f2f2f2;
+        }
 
-    .game-container {
-      position: relative;
-      width: 400px;
-      height: 600px;
-      border: 2px solid #333;
-      background-color: #fff;
-      overflow: hidden;
-    }
+        .game-container {
+            text-align: center;
+            width: 450px;
+        }
 
-    .falling-object {
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 30px;
-      height: 30px;
-      background-color: red;
-      border-radius: 50%;
-    }
+        h1 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
 
-    .basket {
-      position: absolute;
-      bottom: 20px;
-      left: 50%;
-      width: 60px;
-      height: 20px;
-      background-color: blue;
-      transform: translateX(-50%);
-    }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(4, 100px);
+            grid-template-rows: repeat(4, 100px);
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
 
-    .score {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      font-size: 18px;
-      font-weight: bold;
-    }
-  </style>
+        .tile {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #3498db;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .tile.empty {
+            background-color: #ecf0f1;
+            border: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            background-color: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #27ae60;
+        }
+    </style>
 </head>
 <body>
-  <div class="game-container">
-    <div class="score">Score: 0</div>
-    <div class="falling-object"></div>
-    <div class="basket"></div>
-  </div>
+    <div class="game-container">
+        <h1>Tile Slider Puzzle</h1>
+        <div id="board" class="board"></div>
+        <button id="resetBtn" class="reset-btn">Reset Game</button>
+    </div>
 
-  <script>
-    const gameContainer = document.querySelector('.game-container');
-    const fallingObject = document.querySelector('.falling-object');
-    const basket = document.querySelector('.basket');
-    const scoreDisplay = document.querySelector('.score');
+    <script>
+        const board = document.getElementById("board");
+        const resetBtn = document.getElementById("resetBtn");
 
-    let score = 0;
-    let basketPosition = 170; 
+        const SIZE = 4;
+        const TOTAL_TILES = SIZE * SIZE;
 
-    // Function to move the falling object
-    function resetFallingObject() {
-      fallingObject.style.top = '0px';
-      fallingObject.style.left = Math.random() * 370 + 'px'; // Random position within container width
-    }
+        let tiles = [];
 
-    function gameLoop() {
-      // Move the falling object down
-      let objectTop = parseInt(fallingObject.style.top || 0);
-      fallingObject.style.top = objectTop + 5 + 'px';
-
-      // Check if the object reaches the bottom
-      if (objectTop > 570) {
-        // Check if it lands in the basket
-        const objectLeft = parseInt(fallingObject.style.left);
-        const basketLeft = parseInt(basket.style.left);
-
-        if (objectLeft >= basketLeft - 30 && objectLeft <= basketLeft + 60) {
-          // Caught by the basket
-          score++;
-          scoreDisplay.textContent = `Score: ${score}`;
-        } else {
-          // Missed the object
-          alert('Game Over! Final Score: ' + score);
-          score = 0;
-          scoreDisplay.textContent = `Score: ${score}`;
+        function createBoard() {
+            tiles = [];
+            for (let i = 0; i < TOTAL_TILES - 1; i++) {
+                tiles.push(i + 1);
+            }
+            tiles.push(null);
+            shuffleTiles();
+            renderBoard();
         }
-        resetFallingObject();
-      }
 
-      requestAnimationFrame(gameLoop);
-    }
+        function shuffleTiles() {
+            for (let i = tiles.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [tiles[i], tiles[j]] = [tiles[j], tiles[i]];
+            }
+        }
 
-    // Event listener for basket movement
-    window.addEventListener('keydown', (e) => {
-      if (e.key === 'ArrowLeft' && basketPosition > 0) {
-        basketPosition -= 20;
-      } else if (e.key === 'ArrowRight' && basketPosition < 340) {
-        basketPosition += 20;
-      }
-      basket.style.left = basketPosition + 'px';
-    });
+        function renderBoard() {
+            board.innerHTML = "";
+            for (let i = 0; i < TOTAL_TILES; i++) {
+                const tile = document.createElement("div");
+                tile.classList.add("tile");
+                tile.dataset.index = i;
 
-    // Initialize game
-    resetFallingObject();
-    gameLoop();
-  </script>
+                if (tiles[i] !== null) {
+                    tile.textContent = tiles[i];
+                    tile.addEventListener("click", () => handleTileClick(i));
+                } else {
+                    tile.classList.add("empty");
+                }
+
+                board.appendChild(tile);
+            }
+        }
+
+        function handleTileClick(index) {
+            const emptyIndex = tiles.indexOf(null);
+            const validMoves = getValidMoves(emptyIndex);
+
+            if (validMoves.includes(index)) {
+                tiles[emptyIndex] = tiles[index];
+                tiles[index] = null;
+                renderBoard();
+                checkWin();
+            }
+        }
+
+        function getValidMoves(emptyIndex) {
+            const row = Math.floor(emptyIndex / SIZE);
+            const col = emptyIndex % SIZE;
+            const validMoves = [];
+
+            if (row > 0) validMoves.push(emptyIndex - SIZE);
+            if (row < SIZE - 1) validMoves.push(emptyIndex + SIZE);
+            if (col > 0) validMoves.push(emptyIndex - 1);
+            if (col < SIZE - 1) validMoves.push(emptyIndex + 1);
+
+            return validMoves;
+        }
+
+        function checkWin() {
+            if (tiles.every((tile, index) => tile === null || tile === index + 1)) {
+                setTimeout(() => {
+                    alert("Congratulations! You solved the puzzle!");
+                }, 100);
+            }
+        }
+
+        resetBtn.addEventListener("click", createBoard);
+
+        createBoard();
+    </script>
 </body>
 </html>
