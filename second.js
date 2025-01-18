@@ -1,1 +1,1 @@
-console.log("this is devops lab")
+console.log("principle of devops")
